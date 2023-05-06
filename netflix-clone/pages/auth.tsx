@@ -1,5 +1,7 @@
 import Input from "@/components/input";
 import { use, useCallback, useState } from "react";
+import axios from "axios";
+import { signIn } from "next-auth/react";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -12,6 +14,32 @@ const Auth = () => {
       currentVariant === "login" ? "register" : "login"
     );
   }, []);
+
+  const register = useCallback(async () => {
+    try {
+      await axios.post("/api/register", {
+        email,
+        name,
+        password,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }, [email, name, password]);
+
+  const login = useCallback(async () => {
+    try {
+      await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+        callbackUrl: "/",
+      });
+      
+    } catch (error) {
+      console.log(error);
+    }
+  }, [email, password]);
 
   return (
     <div className="relative h-full w-full bg-[url('/images/hero.jpg')] bg-no-repeat bg-center bg-fixed big-cover">
@@ -55,11 +83,16 @@ const Auth = () => {
                 type="password"
               />
             </div>
-            <button className="bg-red-600 py-3 text-white rounded-md w-full mt-10 hover:bg-red-700 transition">
-                {variant === "login" ? "Login" : "Sign Up"}
+            <button
+              onClick={variant === 'login' ? login : register} 
+              className="bg-red-600 py-3 text-white rounded-md w-full mt-10 hover:bg-red-700 transition"
+            >
+              {variant === "login" ? "Login" : "Sign Up"}
             </button>
             <p className="text-neutral-500 mt-12">
-                {variant === "login" ? 'New to Netflix?' : 'Already have an account?'}
+              {variant === "login"
+                ? "New to Netflix?"
+                : "Already have an account?"}
               <span
                 onClick={toggleVariant}
                 className="text-white ml-1 hover:underline cursor-pointer"
